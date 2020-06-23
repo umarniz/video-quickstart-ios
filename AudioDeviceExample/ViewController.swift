@@ -54,6 +54,13 @@ class ViewController: UIViewController {
             self.camera = nil
         }
     }
+    
+    func initialize() throws {
+        let session = AVAudioSession.sharedInstance()
+        try session.setCategory(AVAudioSession.Category.playAndRecord, mode: AVAudioSession.Mode.videoChat, options:[AVAudioSession.CategoryOptions.allowBluetoothA2DP] )
+        
+        try session.setPreferredOutputNumberOfChannels(2)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,6 +76,8 @@ class ViewController: UIViewController {
         audioDeviceButton.setTitle("CoreAudio Device", for: .normal)
 
         prepareLocalMedia()
+        
+        do {try self.initialize()} catch {print("Error initializing audio player")}
     }
 
     override func didReceiveMemoryWarning() {

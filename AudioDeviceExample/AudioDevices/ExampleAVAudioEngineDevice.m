@@ -8,14 +8,14 @@
 #import "ExampleAVAudioEngineDevice.h"
 
 // We want to get as close to 10 msec buffers as possible because this is what the media engine prefers.
-static double const kPreferredIOBufferDuration = 0.01;
+//static double const kPreferredIOBufferDuration = 0.01;
 
 // We will use mono playback and recording where available.
-static size_t const kPreferredNumberOfChannels = 1;
+static size_t const kPreferredNumberOfChannels = 2;
 
 // An audio sample is a signed 16-bit integer.
 static size_t const kAudioSampleSize = 2;
-static uint32_t const kPreferredSampleRate = 48000;
+//static uint32_t const kPreferredSampleRate = 48000;
 
 /*
  * Calls to AudioUnitInitialize() can fail if called back-to-back after a format change or adding and removing tracks.
@@ -358,7 +358,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
 - (AVAudioPCMBuffer *)musicBuffer {
     if (!_musicBuffer) {
-        NSString *fileName = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], @"mixLoop.caf"];
+        NSString *fileName = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], @"stereoLoop.caf"];
         NSURL *url = [NSURL fileURLWithPath:fileName];
         AVAudioFile *file = [[AVAudioFile alloc] initForReading:url error:nil];
 
@@ -422,7 +422,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
     }
 
     AVAudioPlayerNode *player = nil;
-    AVAudioUnitReverb *reverb = nil;
+//    AVAudioUnitReverb *reverb = nil;
 
     BOOL isPlayoutEngine = [self.playoutEngine isEqual:engine];
 
@@ -436,21 +436,21 @@ static size_t kMaximumFramesPerBuffer = 3072;
     AVAudioFile *file = [[AVAudioFile alloc] initForReading:url error:nil];
 
     player = [[AVAudioPlayerNode alloc] init];
-    reverb = [[AVAudioUnitReverb alloc] init];
+//    reverb = [[AVAudioUnitReverb alloc] init];
 
-    [reverb loadFactoryPreset:AVAudioUnitReverbPresetMediumHall];
-    reverb.wetDryMix = 50;
+//    [reverb loadFactoryPreset:AVAudioUnitReverbPresetMediumHall];
+//    reverb.wetDryMix = 50;
 
     [engine attachNode:player];
-    [engine attachNode:reverb];
-    [engine connect:player to:reverb format:file.processingFormat];
-    [engine connect:reverb to:engine.mainMixerNode format:file.processingFormat];
+//    [engine attachNode:reverb];
+    [engine connect:player to:engine.mainMixerNode format:file.processingFormat];
+//    [engine connect:reverb to:engine.mainMixerNode format:file.processingFormat];
 
     if (isPlayoutEngine) {
-        self.playoutReverb = reverb;
+//        self.playoutReverb = reverb;
         self.playoutFilePlayer = player;
     } else {
-        self.recordReverb = reverb;
+//        self.recordReverb = reverb;
         self.recordFilePlayer = player;
     }
 }
@@ -461,8 +461,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
             [self.recordFilePlayer stop];
         }
         [self.recordEngine detachNode:self.recordFilePlayer];
-        [self.recordEngine detachNode:self.recordReverb];
-        self.recordReverb = nil;
+//        [self.recordEngine detachNode:self.recordReverb];
+//        self.recordReverb = nil;
     }
 }
 
@@ -472,8 +472,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
             [self.playoutFilePlayer stop];
         }
         [self.playoutEngine detachNode:self.playoutFilePlayer];
-        [self.playoutEngine detachNode:self.playoutReverb];
-        self.playoutReverb = nil;
+//        [self.playoutEngine detachNode:self.playoutReverb];
+//        self.playoutReverb = nil;
     }
 }
 
@@ -781,7 +781,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     const size_t sessionFramesPerBuffer = kMaximumFramesPerBuffer;
     const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
 
-    return [[TVIAudioFormat alloc] initWithChannels:TVIAudioChannelsMono
+    return [[TVIAudioFormat alloc] initWithChannels:TVIAudioChannelsStereo
                                          sampleRate:sessionSampleRate
                                     framesPerBuffer:sessionFramesPerBuffer];
 }
@@ -789,7 +789,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 + (AudioComponentDescription)audioUnitDescription {
     AudioComponentDescription audioUnitDescription;
     audioUnitDescription.componentType = kAudioUnitType_Output;
-    audioUnitDescription.componentSubType = kAudioUnitSubType_VoiceProcessingIO;
+    audioUnitDescription.componentSubType = kAudioUnitSubType_RemoteIO;
     audioUnitDescription.componentManufacturer = kAudioUnitManufacturer_Apple;
     audioUnitDescription.componentFlags = 0;
     audioUnitDescription.componentFlagsMask = 0;
@@ -797,44 +797,44 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 }
 
 - (void)setupAVAudioSession {
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    NSError *error = nil;
-
-    if (![session setPreferredSampleRate:kPreferredSampleRate error:&error]) {
-        NSLog(@"Error setting sample rate: %@", error);
-    }
-
-    if (![session setPreferredOutputNumberOfChannels:kPreferredNumberOfChannels error:&error]) {
-        NSLog(@"Error setting number of output channels: %@", error);
-    }
+//    AVAudioSession *session = [AVAudioSession sharedInstance];
+//    NSError *error = nil;
 
     /*
      * We want to be as close as possible to the 10 millisecond buffer size that the media engine needs. If there is
      * a mismatch then TwilioVideo will ensure that appropriately sized audio buffers are delivered.
      */
-    if (![session setPreferredIOBufferDuration:kPreferredIOBufferDuration error:&error]) {
-        NSLog(@"Error setting IOBuffer duration: %@", error);
-    }
+//    if (![session setPreferredIOBufferDuration:kPreferredIOBufferDuration error:&error]) {
+//        NSLog(@"Error setting IOBuffer duration: %@", error);
+//    }
 
-    if (![session setCategory:AVAudioSessionCategoryPlayAndRecord error:&error]) {
-        NSLog(@"Error setting session category: %@", error);
-    }
+//    if (![session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetoothA2DP error:&error]) {
+//        NSLog(@"Error setting session category: %@", error);
+//    }
+//
+//    if (![session setMode:AVAudioSessionModeVideoChat error:&error]) {
+//        NSLog(@"Error setting session category: %@", error);
+//    }
+    
+//    if (![session setPreferredSampleRate:kPreferredSampleRate*2 error:&error]) {
+//        NSLog(@"Error setting sample rate: %@", error);
+//    }
 
-    if (![session setMode:AVAudioSessionModeVideoChat error:&error]) {
-        NSLog(@"Error setting session category: %@", error);
-    }
+//    if (![session setPreferredOutputNumberOfChannels:kPreferredNumberOfChannels error:&error]) {
+//        NSLog(@"Error setting number of output channels: %@", error);
+//    }
 
     [self registerAVAudioSessionObservers];
 
-    if (![session setActive:YES error:&error]) {
-        NSLog(@"Error activating AVAudioSession: %@", error);
-    }
+//    if (![session setActive:YES error:&error]) {
+//        NSLog(@"Error activating AVAudioSession: %@", error);
+//    }
 
-    if (session.maximumInputNumberOfChannels > 0) {
-        if (![session setPreferredInputNumberOfChannels:TVIAudioChannelsMono error:&error]) {
-            NSLog(@"Error setting number of input channels: %@", error);
-        }
-    }
+//    if (session.maximumInputNumberOfChannels > 0) {
+//        if (![session setPreferredInputNumberOfChannels:TVIAudioChannelsMono error:&error]) {
+//            NSLog(@"Error setting number of input channels: %@", error);
+//        }
+//    }
 }
 
 - (BOOL)setupAudioUnitWithRenderContext:(AudioRendererContext *)renderContext
