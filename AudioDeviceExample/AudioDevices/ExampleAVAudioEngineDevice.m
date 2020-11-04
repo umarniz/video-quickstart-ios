@@ -813,8 +813,15 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     }
 
     // Note: As of iOS 14 we have to specify AVAudioSessionModeDefault, AVAudioSessionModeVideoChat and AVAudioSessionModeVoiceChat are now completely mono
-    if (![session setMode:AVAudioSessionModeDefault error:&error]) {
-        NSLog(@"Error setting session category: %@", error);
+    if (@available(iOS 14, *)) {
+        if (![session setMode:AVAudioSessionModeDefault error:&error]) {
+            NSLog(@"CustomAudioDevice [ERROR] setting session mode: %@", error);
+        }
+    } else {
+        // But we have to explicitly set the audio mode to be VideoChat for iOS < 14 because otherwise AVAudioSessionModeDefault makes it mono
+        if (![session setMode:AVAudioSessionModeVideoChat error:&error]) {
+            NSLog(@"CustomAudioDevice [ERROR] setting session mode: %@", error);
+        }
     }
     
     if (![session setPreferredSampleRate:kPreferredSampleRate error:&error]) {
