@@ -8,14 +8,14 @@
 #import "ExampleAVAudioEngineDevice.h"
 
 // We want to get as close to 10 msec buffers as possible because this is what the media engine prefers.
-//static double const kPreferredIOBufferDuration = 0.01;
+static double const kPreferredIOBufferDuration = 0.01;
 
 // We will use mono playback and recording where available.
 static size_t const kPreferredNumberOfChannels = 2;
 
 // An audio sample is a signed 16-bit integer.
 static size_t const kAudioSampleSize = 2;
-//static uint32_t const kPreferredSampleRate = 48000;
+static uint32_t const kPreferredSampleRate = 48000;
 
 /*
  * Calls to AudioUnitInitialize() can fail if called back-to-back after a format change or adding and removing tracks.
@@ -797,38 +797,39 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 }
 
 - (void)setupAVAudioSession {
-//    AVAudioSession *session = [AVAudioSession sharedInstance];
-//    NSError *error = nil;
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    NSError *error = nil;
 
     /*
      * We want to be as close as possible to the 10 millisecond buffer size that the media engine needs. If there is
      * a mismatch then TwilioVideo will ensure that appropriately sized audio buffers are delivered.
      */
-//    if (![session setPreferredIOBufferDuration:kPreferredIOBufferDuration error:&error]) {
-//        NSLog(@"Error setting IOBuffer duration: %@", error);
-//    }
+    if (![session setPreferredIOBufferDuration:kPreferredIOBufferDuration error:&error]) {
+        NSLog(@"Error setting IOBuffer duration: %@", error);
+    }
 
-//    if (![session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetoothA2DP error:&error]) {
-//        NSLog(@"Error setting session category: %@", error);
-//    }
-//
-//    if (![session setMode:AVAudioSessionModeVideoChat error:&error]) {
-//        NSLog(@"Error setting session category: %@", error);
-//    }
+    if (![session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetoothA2DP error:&error]) {
+        NSLog(@"Error setting session category: %@", error);
+    }
+
+    // Note: As of iOS 14 we have to specify AVAudioSessionModeDefault, AVAudioSessionModeVideoChat and AVAudioSessionModeVoiceChat are now completely mono
+    if (![session setMode:AVAudioSessionModeDefault error:&error]) {
+        NSLog(@"Error setting session category: %@", error);
+    }
     
-//    if (![session setPreferredSampleRate:kPreferredSampleRate*2 error:&error]) {
-//        NSLog(@"Error setting sample rate: %@", error);
-//    }
+    if (![session setPreferredSampleRate:kPreferredSampleRate error:&error]) {
+        NSLog(@"Error setting sample rate: %@", error);
+    }
 
-//    if (![session setPreferredOutputNumberOfChannels:kPreferredNumberOfChannels error:&error]) {
-//        NSLog(@"Error setting number of output channels: %@", error);
-//    }
+    if (![session setPreferredOutputNumberOfChannels:kPreferredNumberOfChannels error:&error]) {
+        NSLog(@"Error setting number of output channels: %@", error);
+    }
 
     [self registerAVAudioSessionObservers];
 
-//    if (![session setActive:YES error:&error]) {
-//        NSLog(@"Error activating AVAudioSession: %@", error);
-//    }
+    if (![session setActive:YES error:&error]) {
+        NSLog(@"Error activating AVAudioSession: %@", error);
+    }
 
 //    if (session.maximumInputNumberOfChannels > 0) {
 //        if (![session setPreferredInputNumberOfChannels:TVIAudioChannelsMono error:&error]) {
